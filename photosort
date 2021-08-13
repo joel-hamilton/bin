@@ -1,4 +1,4 @@
-#! /usr/bin/env node
+#!/usr/bin/env node
 /**
  Sorts Google Pixel photos into directories based on date. The format is more or 
  less PXL_20190405_177789345.jpg, with some exceptions. Photos taken in portrait

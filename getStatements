@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+#!/usr/bin/env bash
 # Open browser tabs to grab statements for misc. services
  
 urls='https://www.telus.com/login
