@@ -1,0 +1,68 @@
+#! /usr/bin/env node
+/**
+ Sorts Google Pixel photos into directories based on date. The format is more or 
+ less PXL_20190405_177789345.jpg, with some exceptions. Photos taken in portrait
+ mode are suffixed with _COVER_, or _COVER_~2 etc. if edited. If only a single
+ cover exists, prefer it over the basic photo. If multiple covers exist, leave for
+ manual sorting (it's probably the result of an in-phone edit).
+
+ Usage: `photosort /dir/to/photos`
+*/
+
+const path = require('path');
+const fs = require('fs');
+
+const directoryPath = process.argv[2]; 
+const files = fs.readdirSync(directoryPath);
+
+files.forEach(file => {
+	const filePath = path.join(directoryPath, file);
+	const stats = fs.statSync(filePath);
+
+	if(stats.isDirectory()) {
+		if(!filePath.toUpperCase().includes("IMG")) return;
+
+		const dirFiles = fs.readdirSync(filePath);
+
+        // covers are the google portrait-mode blurred version
+		 const covers = dirFiles.filter(dirFile => dirFile.includes('COVER'));
+
+		if(covers.length === 1) { // only one cover, we'll save it
+			const oldPath = path.join(filePath, covers[0]);
+            
+            // rename to the folder name (will end up in parent dir)
+			const newPath = `${filePath}.jpg`;
+			fs.renameSync(oldPath, newPath);
+			fs.rmdirSync(filePath, {recursive: true});
+			moveToMonth(newPath);
+		} else if (!dirFiles.length) { // multiple covers, choose manually
+			fs.rmdirSync(filePath, {recursive: true});
+		}
+	} else {
+		moveToMonth(filePath);
+	}
+});
+
+function moveToMonth(filePath) {
+	const match = filePath.match(/[_-]\d{8}[_-]/);
+	if(!match) {
+		console.log(`No match on file: ${filepath}`);
+		return;
+	}
+
+    const y = match[0].substr(1, 4);
+    const m = match[0].substr(5, 2);
+    const d = match[0].substr(7, 2);
+    const date = new Date(`${y}-${m}-${d} 00:00:00`);
+    const monthName = date.toLocaleString('en-us', { month: 'long' });
+    const monthNum = date.getMonth() + 1;
+    monthNum = ("" + monthNum).padStart(2, '0');
+
+
+	const monthDir = path.join(directoryPath, date.format(`${monthNum} - ${monthName}`));
+	if(!fs.existsSync(monthDir)) {
+		fs.mkdirSync(monthDir);
+	}
+
+	fs.renameSync(filePath, path.join(monthDir, fileName));
+}
