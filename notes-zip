@@ -1,20 +1,19 @@
 #! /usr/bin/env bash
 
-# Zips personal Dropbox Notes folder for easy backup
+# Zips personal Notes folder for easy backup
+#
+# Depends on NOTES_PATH being set
 # Usage: cd to desired backup location, run script
 
-read -p "Enter Dropbox Notes path (default ${HOME}/Dropbox/Notes" path
-path="${path:-"${HOME}/Dropbox/Notes"}"
-
-if [[ -d "$path" ]]
+if [[ -d "$NOTES_PATH" ]]
 then
     date=$(date +%Y%m%d)
     filename="NotesBackup${date}.zip" 
     currentdir=$(pwd)
-    echo "Zipping ${path} to ${filename}"
+    echo "Zipping $NOTES_PATH to $filename}"
 
     # change to the zipping dir to avoid saving all the directories in filepath
-    (cd "$path" && zip -re "${currentdir}/${filename}" .)
+    (cd "$NOTES_PATH" && zip -re "${currentdir}/$filename" .)
     exit 0
 else
     echo "Invalid path"

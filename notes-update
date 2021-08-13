@@ -5,3 +5,5 @@
 # Tag format {{2021-02-21|ago}} converts to {{2021-02-21|10 months ago}}.
 # Tags to include arbitrary pipe-separated params for eg: sending SMS 
 # reminders.
+#
+# Depends on NOTES_PATH being set

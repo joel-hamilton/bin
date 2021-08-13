@@ -6,6 +6,8 @@
 # eg: 
 #   - {{1989-05-04|remind~1y|m~Angela's birthday coming up, start looking for a gift!}}
 #   - {{1989-06-04|remind~1y|m~Angela's birthday today!}}
+#
+# Depends on NOTES_PATH being set
 
 import os
 import fileinput
@@ -15,23 +17,12 @@ from datetime import date
 from datetime import timedelta
 
 def run():
-    path = getPath()
+    path = os.environ['NOTES_PATH']
     print(f'opening {path}')
     files = getFiles(path)
     date_strings = getDateStrings(files)
     messages_today = getMessagesToday(date_strings)
     success = sendMessages(messages_today)
-
-def getPath():
-    """get path to Dropbox 'Notes' folder from default or stdin"""
-    path = '/Users/joel/Dropbox/Notes'
-    print(f'Enter .md directory (default is {path})')
-    for line in fileinput.input():
-        line = line.strip()
-        path = line if line else path
-        break
-
-    return path
 
 def getFiles(path):
     """list .md files in path"""
