@@ -1,0 +1,126 @@
+#!/usr/bin/env python
+
+# WIP
+# Send reminders based on specially formatted date tags in my personal wiki.
+# Arbitrary params are pipe-separated:
+# eg: 
+#   - {{1989-05-04|remind~1y|m~Angela's birthday coming up, start looking for a gift!}}
+#   - {{1989-06-04|remind~1y|m~Angela's birthday today!}}
+
+import os
+import fileinput
+import re
+import urllib.request
+from datetime import date
+from datetime import timedelta
+
+def run():
+    path = getPath()
+    print(f'opening {path}')
+    files = getFiles(path)
+    date_strings = getDateStrings(files)
+    messages_today = getMessagesToday(date_strings)
+    success = sendMessages(messages_today)
+
+def getPath():
+    """get path to Dropbox 'Notes' folder from default or stdin"""
+    path = '/Users/joel/Dropbox/Notes'
+    print(f'Enter .md directory (default is {path})')
+    for line in fileinput.input():
+        line = line.strip()
+        path = line if line else path
+        break
+
+    return path
+
+def getFiles(path):
+    """list .md files in path"""
+    files = []
+    for filename in os.listdir(path):
+        f = os.path.join(path, filename)
+        if os.path.isfile(f) and filename.endswith('.md'):
+            files.append(f)
+
+    return files
+
+def getDateStrings(files):
+    """get dict of {filename: [reminder strings]}"""
+    dates_strings = {}
+    for file in files:
+        with open(file) as f:
+            for line in f:
+                # get all strings with full date and pipe-separated params
+                regex = r'{{(\d{4}\-\d{2}\-\d{2}\|.*)}}'
+                matches = re.findall(regex, line)
+                if(matches):
+                    if(file not in dates_strings):
+                        dates_strings[file] = []
+                    dates_strings[file].extend(matches)
+
+    return dates_strings
+
+def getMessagesToday(date_strings):
+    """parse reminder string (eg: 2021-02-02|remind~1y|m~test) into an array of messages that are due to be sent today"""
+    reminders_today = []
+    dt = date.today()
+    for file_name in date_strings:
+        for date_string in date_strings[file_name]:
+             # group date and params
+            matches = re.search(r'(\d{4}\-\d{2}\-\d{2})\|(.*)', date_string)
+            d = date.fromisoformat(matches.group(1))
+            params = [x.strip() for x in matches.group(2).split("|")]
+
+            # parse recurspec and message from params string
+            recurspec = None
+            message = None
+            for param in params:
+                if(param[:5] == 'recur'):
+                    recurspec = param[5:]
+                elif (param[:2] == 'm~'):
+                    message = param[2:]
+
+            if(not recurspec or not message):
+                continue
+
+            # parse recurspec
+            recurspec_matches = re.search(r'(\d*)(.*)', recurspec)
+            recur_num = recurspec_matches.group(1)
+            recur_period = recurspec_matches.group(2)
+
+            if (recur_period == 'y'):
+                # day and month match, and we're on nth year
+                if (d.day == dt.day and d.month == dt.month and (dt.year - d.year) % int(recur_num) == 0):
+                    reminders_today.append(message)
+
+    print(reminders_today)
+    return reminders_today
+
+def sendMessages(messages):
+    """Send SMS messages to my phone number"""
+    # TODO add env vars, send SMS reminder!
+    # Important that this file is executable on a wide range of systems, so avoiding eg: 'request' module
+    twilio_sid = ''
+    twilio_auth = ''
+    from_num = ''
+    to_num = ''
+    url = f'https://api.twilio.com/2010-04-01/Accounts/{twilio_sid}/Messages.json'
+
+    auth_handler = urllib.request.HTTPBasicAuthHandler()
+    auth_handler.add_password(None, 'api.twilio.com', twilio_sid, twilio_auth)
+    opener = urllib.request.build_opener(auth_handler)
+    urllib.request.install_opener(opener)
+
+    data = urllib.parse.urlencode({
+        'Body': '',
+        'From': from_num,
+        'To': to_num
+    })
+
+    data = data.encode('ascii')
+    req = urllib.request.Request(url, data=data, method='POST')
+    with urllib.request.urlopen(req) as f:
+        pass
+    print(f.status)
+    print(f.reason)
+
+run()
