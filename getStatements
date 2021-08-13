@@ -1,0 +1,10 @@
+#! /usr/bin/env bash
+# Open browser tabs to grab statements for misc. services
+ 
+urls='https://www.telus.com/login
+http://easyweb.td.com/waw/idp/login.htm
+https://www1.bmo.com/onlinebanking/cgi-bin/netbnx/NBmain?product=5
+https://myaccount.teksavvy.com/
+https://cloud.digitalocean.com/login'
+
+xargs open -a "Firefox" <<< $urls
