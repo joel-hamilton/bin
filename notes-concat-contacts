@@ -1,0 +1,46 @@
+#!/usr/bin/env node
+
+/**
+Concats all .md files in personal wiki that contain [[Contacts]] tag,
+splitting them into files of <4500 chars to allow for Google Cloud
+Text-to-Speech processing (script at ~/scripts/text-to-speech)
+
+Depends on NOTES_PATH being set
+Usage: cd to output directory and run script
+*/
+
+
+const fs = require('fs');
+
+let textChunks = [];
+let currentChunkIndex = 0;
+let path = process.env.NOTES_PATH;
+fs.readdir(path, (err, files) => {
+    if (err) console.log(err);
+
+    files = files.filter(file => file.substr(0, 1) !== '.');
+    files.forEach((file) => {
+        let contents = fs.readFileSync(`${path}/${file}`, { encoding: 'utf8' });
+        if (contents.includes('[[Contacts')) {
+            contents = contents.split('\n').splice(2).join('\n');
+            if (!contents) return;
+
+            contents = `\n\n${file.substring(0, file.length - 3)}\n${contents}`;
+
+            if(textChunks.length <= currentChunkIndex) {
+                textChunks[currentChunkIndex] = '';
+            }
+
+            if (textChunks[currentChunkIndex].length + contents.length > 4500) {
+                currentChunkIndex++;
+            }
+
+            textChunks[currentChunkIndex] += contents;
+
+        }
+    });
+
+    for (let i = 0; i <= currentChunkIndex; i++) {
+        fs.writeFileSync(`./combinedContacts${i}.txt`, textChunks[i]);
+    }
+});
