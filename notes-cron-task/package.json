@@ -1,0 +1,20 @@
+{
+  "name": "notes-cron-task",
+  "version": "1.0.0",
+  "description": "",
+  "main": "start.js",
+  "scripts": {
+    "start": "node start.js",
+    "test": "jest --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github.com/joelhamilton5/bin"
+  },
+  "author": "joel",
+  "license": "ISC",
+  "dependencies": {
+    "jest": "^27.4.5",
+    "dotenv": "^10.0.0"
+  }
+}
