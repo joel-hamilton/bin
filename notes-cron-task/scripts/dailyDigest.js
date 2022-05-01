@@ -1,12 +1,12 @@
+// Send a daily digest email with selection frrom Box1/2/3
+
 const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
-const { promisify } = require("util");
-const fs = require("fs");
-const glob = require("glob");
 const showdown = require("showdown");
 const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
+const Notes = require('./notes');
 
-module.exports = class Task {
+module.exports = class DailyDigest {
   constructor() {
     this.priorityContent = {
       LOW: [], // box3,
@@ -15,6 +15,7 @@ module.exports = class Task {
     };
 
     this.htmlContent = "";
+    this.notes = new Notes();
   }
 
   async run() {
@@ -24,10 +25,6 @@ module.exports = class Task {
 
     if (process.env.NODE_ENV !== "test" && !process.env.AWS_SECRET_ACCESS_KEY) {
       throw new Error("no AWS_SECRET_ACCESS_KEY");
-    }
-
-    if (!process.env.NOTES_PATH) {
-      throw new Error("no NOTES_PATH");
     }
 
     if (!process.env.NOTES_EMAIL) {
@@ -44,21 +41,12 @@ module.exports = class Task {
     }
   }
 
-  async getFileList() {
-    const files = await this.async(glob)(process.env.NOTES_PATH + "/**/*.md");
-    return files;
-  }
-
   async processFiles() {
-    const files = await this.getFileList();
+    const files = await this.notes.getFileList();
     for (const file of files) {
-      const content = await this.getFileContent(file);
+      const content = await this.notes.getFileContent(file);
       this.addPriorityContent(path.basename(file, ".md"), content);
     }
-  }
-
-  async getFileContent(file) {
-    return await this.async(fs.readFile)(file, "utf-8");
   }
 
   addPriorityContent(filename, content) {
@@ -148,10 +136,6 @@ module.exports = class Task {
     });
 
     await client.send(command);
-  }
-
-  async(fn) {
-    return promisify(fn);
   }
 
   getEnv(prop) {

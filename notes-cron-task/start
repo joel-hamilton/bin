@@ -1,13 +1,17 @@
 #!/usr/bin/env node
 
-const Task = require("./task");
-const task = new Task();
-console.log(`${(new Date()).toISOString()}: running notes cron`);
+const DailyDigest = require("./scripts/dailyDigest");
+const Update = require("./scripts/update");
+const dailyDigest = new DailyDigest();
+const update = new Update();
+
+console.log(`${new Date().toISOString()}: running notes cron`);
 
 (async function () {
   try {
-    await task.run();
-  } catch(e) {
+    await update.run();
+    // await dailyDigest.run();
+  } catch (e) {
     console.error(e);
   }
 })();
