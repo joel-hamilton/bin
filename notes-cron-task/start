@@ -10,7 +10,7 @@ console.log(`${new Date().toISOString()}: running notes cron`);
 (async function () {
   try {
     await update.run();
-    // await dailyDigest.run();
+    await dailyDigest.run();
   } catch (e) {
     console.error(e);
   }
