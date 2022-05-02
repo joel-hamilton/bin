@@ -1,7 +1,7 @@
 // Send a daily digest email with selection frrom Box1/2/3
 
 const path = require("path");
-require("dotenv").config({ path: path.join(__dirname, ".env") });
+require("dotenv").config({ path: path.join(__dirname, "../.env") });
 const showdown = require("showdown");
 const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
 const Notes = require('./notes');

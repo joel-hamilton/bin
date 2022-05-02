@@ -1,3 +1,5 @@
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, "../.env") });
 const glob = require("glob");
 const { promisify } = require("util");
 const fs = require("fs");
