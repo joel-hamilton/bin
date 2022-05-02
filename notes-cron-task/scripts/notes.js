@@ -14,7 +14,11 @@ module.exports = class Notes {
     return files;
   }
 
-  async getFileContent(file) {
-    return await promisify(fs.readFile)(file, "utf-8");
+  async getContent(filePath) {
+    return await promisify(fs.readFile)(filePath, "utf-8");
+  }
+
+  async putContent(filePath, content) {
+    return await promisify(fs.writeFile)(filePath, content);
   }
 };

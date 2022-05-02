@@ -23,9 +23,9 @@ describe("Notes", () => {
     });
   });
 
-  describe("getFileContent", () => {
+  describe("getContent", () => {
     it("loads file content correctly", async () => {
-      await expect(notes.getFileContent(fileList[0])).resolves.toBe(
+      await expect(notes.getContent(fileList[0])).resolves.toBe(
         "file content"
       );
     });

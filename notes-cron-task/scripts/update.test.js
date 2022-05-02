@@ -8,15 +8,19 @@ describe("Updates", () => {
     update = new Update();
   });
 
-  describe('updateNote', () => {
+  describe("updateNote", () => {
     // test that it loads a file list, calls out to save a file
   });
 
-  describe('runFns', () => {
-    it('runs fns', () => {
-      const content = `Testing ago(2020-01-01), and age(Feb 1987)`
-      update.runFns(content);
-      //
-    })
-  })
+  describe("runFn", () => {
+    it("correctly replaces function strings with updated values", () => {
+      const content = `Testing doubleupper(joel) and doubleupper(joel ~ JOELJOEL)`;
+      const updatedContent = update.runFn(content, "doubleupper", (param) =>
+        (param + param).toUpperCase()
+      );
+      expect(updatedContent).toEqual(
+        "Testing doubleupper(joel ~ JOELJOEL) and doubleupper(joel ~ JOELJOEL)"
+      );
+    });
+  });
 });

@@ -44,7 +44,7 @@ module.exports = class DailyDigest {
   async processFiles() {
     const files = await this.notes.getFileList();
     for (const file of files) {
-      const content = await this.notes.getFileContent(file);
+      const content = await this.notes.getContent(file);
       this.addPriorityContent(path.basename(file, ".md"), content);
     }
   }
