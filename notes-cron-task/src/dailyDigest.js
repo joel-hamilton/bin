@@ -1,44 +1,25 @@
 // Send a daily digest email with selection frrom Box1/2/3
 
 const path = require("path");
-require("dotenv").config({ path: path.join(__dirname, "../.env") });
 const showdown = require("showdown");
-const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
-const Notes = require('./notes');
+const Notes = require("../src/notes");
 
 module.exports = class DailyDigest {
-  constructor() {
+  constructor(notesPath) {
     this.priorityContent = {
       LOW: [], // box3,
       MEDIUM: [], // box2,
       HIGH: [], // box3
     };
 
-    this.htmlContent = "";
-    this.notes = new Notes();
+    this.notes = new Notes(notesPath);
   }
 
-  async run() {
-    if (process.env.NODE_ENV !== "test" && !process.env.AWS_ACCESS_KEY_ID) {
-      throw new Error("no AWS_ACCESS_KEY_ID");
-    }
-
-    if (process.env.NODE_ENV !== "test" && !process.env.AWS_SECRET_ACCESS_KEY) {
-      throw new Error("no AWS_SECRET_ACCESS_KEY");
-    }
-
-    if (!process.env.NOTES_EMAIL) {
-      throw new Error("no NOTES_EMAIL");
-    }
-
+  async get() {
     await this.processFiles();
-    const rawContent = this.getRawContent();
-    const sortedRawContent = this.sortByLength(rawContent);
-    this.htmlContent = this.convertToHtml(sortedRawContent);
-
-    if (process.env.NODE_ENV !== "test") {
-      await this.sendEmail();
-    }
+    const sortedMarkdownContent = this.sortByLength(this.getRawContent());
+    const htmlContent = this.convertToHtml(sortedMarkdownContent);
+    return [sortedMarkdownContent.join("\n\n"), htmlContent];
   }
 
   async processFiles() {
@@ -67,7 +48,7 @@ module.exports = class DailyDigest {
     const firstLinePriorityBucket = getPriorityBucket(firstLine);
     if (firstLinePriorityBucket) {
       this.priorityContent[firstLinePriorityBucket].push(
-        `#${filename}\n\n${content}`
+        `# ${filename}\n\n${content}`
       );
     }
 
@@ -80,7 +61,7 @@ module.exports = class DailyDigest {
 
       if (priorityBucket) {
         this.priorityContent[priorityBucket].push(
-          `#${filename}\n\n${paragraph}`
+          `# ${filename}\n\n${paragraph}`
         );
       }
     });
@@ -112,33 +93,5 @@ module.exports = class DailyDigest {
     }
 
     return html.join("\n<hr>\n");
-  }
-
-  async sendEmail() {
-    const client = new SESClient({ region: "ca-central-1" });
-    const command = new SendEmailCommand({
-      Destination: {
-        ToAddresses: [process.env.NOTES_EMAIL],
-      },
-      Message: {
-        Body: {
-          Html: {
-            Charset: "UTF-8",
-            Data: this.htmlContent,
-          },
-        },
-        Subject: {
-          Charset: "UTF-8",
-          Data: "Daily Digest",
-        },
-      },
-      Source: process.env.NOTES_EMAIL,
-    });
-
-    await client.send(command);
-  }
-
-  getEnv(prop) {
-    return process.env[prop];
   }
 };

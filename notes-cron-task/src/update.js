@@ -2,11 +2,11 @@ const Notes = require("./notes");
 const moment = require("moment");
 
 module.exports = class Update {
-  constructor() {
-    this.notes = new Notes();
+  constructor(notesPath) {
+    this.notes = new Notes(notesPath);
   }
 
-  async run() {
+  async runAllFunctions() {
     const list = await this.notes.getFileList();
     await Promise.all(list.map((notePath) => this.updateNote(notePath)));
   }
@@ -81,6 +81,6 @@ module.exports = class Update {
 
   parseFor(dateString) {
     const agoString = this.parseAgo(dateString);
-    return 'for ' + agoString.replace("ago", "").trim();
+    return "for " + agoString.replace("ago", "").trim();
   }
 };

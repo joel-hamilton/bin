@@ -1,5 +1,5 @@
-const Update = require("../scripts/update");
-const fileList = require("../test/fileList");
+const Update = require("../src/update");
+const fileList = require("../_test/fileList");
 
 describe("Updates", () => {
   let update;

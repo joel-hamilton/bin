@@ -1,34 +1,23 @@
-const DailyDigest = require("../scripts/dailyDigest.js");
-const fileList = require("../test/fileList");
+const DailyDigest = require("../src/dailyDigest.js");
+const fileList = require("../_test/fileList");
 
 describe("DailyDigest", () => {
-  let task;
+  let dailyDigest;
 
   beforeEach(() => {
-    task = new DailyDigest();
+    dailyDigest = new DailyDigest();
     process.env.TEST_VAR = "test";
     process.env.PRIORITY_NOTES_PER_DAY = 2;
     process.env.NOTES_EMAIL = "test@example.com";
-  });
-
-  describe("run", () => {
-    it("loads env", async () => {
-      await task.run();
-      expect(task.getEnv("TEST_VAR")).toBe("test");
-    });
-
-    it("throws an error if no NOTES_EMAIL env", async () => {
-      delete process.env.NOTES_EMAIL;
-      await expect(task.run()).rejects.toEqual(new Error("no NOTES_EMAIL"));
-    });
+    process.env.NOTES_PATH = "/tmp/notes";
   });
 
   describe("parsing content", () => {
     const TITLE = "test title";
-    let task;
+    let dailyDigest;
 
     beforeEach(() => {
-      task = new DailyDigest();
+      dailyDigest = new DailyDigest();
     });
 
     it('adds entire content if "[[box...]]" on first line', () => {
@@ -41,22 +30,22 @@ Author: [[Donella Meadows]]`;
       const contentHigh = `first line [[box1]]
 Author: [[Donella Meadows]] [[Box1]]`;
 
-      task.addPriorityContent(TITLE, contentLow);
-      task.addPriorityContent(TITLE, contentMedium);
-      task.addPriorityContent(TITLE, contentHigh);
-      expect(task.priorityContent).toEqual({
+      dailyDigest.addPriorityContent(TITLE, contentLow);
+      dailyDigest.addPriorityContent(TITLE, contentMedium);
+      dailyDigest.addPriorityContent(TITLE, contentHigh);
+      expect(dailyDigest.priorityContent).toEqual({
         LOW: [
-          `#${TITLE}
+          `# ${TITLE}
 
 ${contentLow}`,
         ],
         MEDIUM: [
-          `#${TITLE}
+          `# ${TITLE}
 
 ${contentMedium}`,
         ],
         HIGH: [
-          `#${TITLE}
+          `# ${TITLE}
 
 ${contentHigh}`,
         ],
@@ -82,13 +71,13 @@ ${contentHigh}`,
 
     ${expectedValueMedium}`;
 
-      task.addPriorityContent(TITLE, allContentLow);
-      task.addPriorityContent(TITLE, allContentMediumAndHigh);
+      dailyDigest.addPriorityContent(TITLE, allContentLow);
+      dailyDigest.addPriorityContent(TITLE, allContentMediumAndHigh);
 
-      expect(task.priorityContent).toEqual({
-        LOW: [`#${TITLE}\n\n${expectedValueLow}`],
-        MEDIUM: [`#${TITLE}\n\n${expectedValueMedium}`],
-        HIGH: [`#${TITLE}\n\n${expectedValueHigh}`],
+      expect(dailyDigest.priorityContent).toEqual({
+        LOW: [`# ${TITLE}\n\n${expectedValueLow}`],
+        MEDIUM: [`# ${TITLE}\n\n${expectedValueMedium}`],
+        HIGH: [`# ${TITLE}\n\n${expectedValueHigh}`],
       });
     });
 
@@ -104,15 +93,15 @@ and more stuff
     
     ${contentMedium}`;
 
-      task.addPriorityContent(TITLE, contentLow);
-      expect(task.priorityContent).toEqual({
+      dailyDigest.addPriorityContent(TITLE, contentLow);
+      expect(dailyDigest.priorityContent).toEqual({
         LOW: [
-          `#${TITLE}
+          `# ${TITLE}
 
 ${contentLow}`,
         ],
         MEDIUM: [
-          `#${TITLE}
+          `# ${TITLE}
 
 ${contentMedium}`,
         ],
@@ -122,27 +111,27 @@ ${contentMedium}`,
   });
 
   describe("sorting/selecting content", () => {
-    let task;
+    let dailyDigest;
 
     beforeEach(() => {
-      task = new DailyDigest();
+      dailyDigest = new DailyDigest();
     });
 
     it("sorts priority content by length", () => {
       const strArr = ["bye", "hi", "nope"];
       const expectedOutput = ["hi", "bye", "nope"];
-      expect(task.sortByLength(strArr)).toEqual(expectedOutput);
+      expect(dailyDigest.sortByLength(strArr)).toEqual(expectedOutput);
     });
 
     it("adds raw content", () => {
       // TODO check selection is valid
-      task.priorityContent = {
+      dailyDigest.priorityContent = {
         LOW: ["a", "b", "c"],
         MEDIUM: ["d", "e", "f"],
         HIGH: ["g", "h", "i"],
       };
 
-      const content = task.getRawContent();
+      const content = dailyDigest.getRawContent();
       expect(content).not.toBeUndefined();
     });
 
@@ -154,7 +143,7 @@ ${contentMedium}`,
 - item2
     `;
 
-      const output = task.convertToHtml([input]);
+      const output = dailyDigest.convertToHtml([input]);
 
       const expectedOutput = `<h1 id="testtitle">test title</h1>
 <h2 id="subheading">subheading</h2>

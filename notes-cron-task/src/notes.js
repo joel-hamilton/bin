@@ -5,14 +5,12 @@ const { promisify } = require("util");
 const fs = require("fs");
 
 module.exports = class Notes {
-  constructor() {}
+  constructor(notesPath) {
+    this.notesPath = notesPath;
+  }
 
   async getFileList() {
-    if (!process.env.NOTES_PATH) {
-      throw new Error("no NOTES_PATH");
-    }
-
-    const files = await promisify(glob)(process.env.NOTES_PATH + "/**/*.md");
+    const files = await promisify(glob)(this.notesPath + "/**/*.md");
     return files;
   }
 

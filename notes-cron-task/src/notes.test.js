@@ -1,23 +1,16 @@
-const Notes = require("../scripts/notes");
-const fileList = require("../test/fileList");
+const Notes = require("../src/notes");
+const fileList = require("../_test/fileList");
 const path = require("path");
 
 describe("Notes", () => {
   let notes;
 
   beforeEach(() => {
-    notes = new Notes();
-    process.env.NOTES_PATH = path.resolve("./test/mock-files");
+    notesPath = path.resolve("./_test/mock-files");
+    notes = new Notes(notesPath);
   });
 
   describe("getFileList", () => {
-    it("throws an error if no NOTES_PATH env", async () => {
-      delete process.env.NOTES_PATH;
-      await expect(notes.getFileList()).rejects.toEqual(
-        new Error("no NOTES_PATH")
-      );
-    });
-
     it("iterates through files", async () => {
       await expect(notes.getFileList()).resolves.toEqual(fileList);
     });
