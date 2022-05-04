@@ -1,5 +1,6 @@
+const path = require('path')
 module.exports = [
-  "/Users/joelhamilton/bin/notes-cron-task/test/mock-files/file1.md",
-  "/Users/joelhamilton/bin/notes-cron-task/test/mock-files/file2.md",
-  "/Users/joelhamilton/bin/notes-cron-task/test/mock-files/nested folder/file3.md",
+  path.join(__dirname, "mock-files/file1.md"),
+  path.join(__dirname, "mock-files/file2.md"),
+  path.join(__dirname, "mock-files/nested folder/file3.md"),
 ];
